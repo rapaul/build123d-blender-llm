@@ -5,7 +5,12 @@
       "Bash(uv init:*)",
       "Bash(uv add:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(uv run python:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(pnpm init:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm exec:*)"
     ]
   }
 }
