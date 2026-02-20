@@ -3,16 +3,15 @@
 Usage:
     uv run python render.py <model_file> <change_name>
 
-Loads a build123d model file, extracts the `result` shape, exports it to a
-temporary STL, then invokes Blender headlessly to produce four canonical
-renders (isometric, plan, front, side) under renders/<change_name>/.
+Loads a build123d model file, extracts the `result` shape, exports it to
+renders/<change_name>/model.stl, then invokes Blender headlessly to produce
+four canonical renders (isometric, plan, front, side) under renders/<change_name>/.
 """
 
 import os
 import sys
 import shutil
 import subprocess
-import tempfile
 import traceback
 from pathlib import Path
 
@@ -92,56 +91,47 @@ def main() -> None:
     output_dir = project_root / "renders" / change_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    # --- 4.1 Export to temporary STL ---
-    tmp_stl = tempfile.NamedTemporaryFile(suffix=".stl", delete=False)
-    tmp_stl.close()
-    tmp_stl_path = Path(tmp_stl.name)
+    # --- 4.1 Export STL to output directory ---
+    stl_path = output_dir / "model.stl"
+    export_stl(shape, str(stl_path), tolerance=0.01)
 
-    try:
-        export_stl(shape, str(tmp_stl_path), tolerance=0.01)
+    # --- 6.2 Invoke Blender subprocess ---
+    blender_script = project_root / "blender_render.py"
+    cmd = [
+        blender_bin,
+        "--background",
+        "--python", str(blender_script),
+        "--",
+        str(stl_path),
+        str(output_dir.resolve()),
+    ]
+    # Note: Blender 4.2+ supports --gpu-backend none for GPU-free environments.
+    # We rely on blender_render.py falling back to Cycles CPU if EEVEE is unavailable.
+    env = os.environ.copy()
+    # Use software Mesa rendering on GPU-free / WSL2 environments
+    env.setdefault("LIBGL_ALWAYS_SOFTWARE", "1")
+    result = subprocess.run(cmd, capture_output=True, text=True, env=env)
 
-        # --- 6.2 Invoke Blender subprocess ---
-        blender_script = project_root / "blender_render.py"
-        cmd = [
-            blender_bin,
-            "--background",
-            "--python", str(blender_script),
-            "--",
-            str(tmp_stl_path),
-            str(output_dir.resolve()),
-        ]
-        # Note: Blender 4.2+ supports --gpu-backend none for GPU-free environments.
-        # We rely on blender_render.py falling back to Cycles CPU if EEVEE is unavailable.
-        env = os.environ.copy()
-        # Use software Mesa rendering on GPU-free / WSL2 environments
-        env.setdefault("LIBGL_ALWAYS_SOFTWARE", "1")
-        result = subprocess.run(cmd, capture_output=True, text=True, env=env)
+    # Always surface Blender's output for debugging
+    if result.stdout:
+        print(result.stdout, end="")
+    if result.stderr:
+        print(result.stderr, end="", file=sys.stderr)
 
-        # Always surface Blender's output for debugging
-        if result.stdout:
-            print(result.stdout, end="")
-        if result.stderr:
-            print(result.stderr, end="", file=sys.stderr)
+    # --- 6.3 Handle Blender failure ---
+    if result.returncode != 0:
+        print("Error: Blender exited with a non-zero status.", file=sys.stderr)
+        sys.exit(result.returncode)
 
-        # --- 6.3 Handle Blender failure ---
-        if result.returncode != 0:
-            print("Error: Blender exited with a non-zero status.", file=sys.stderr)
-            sys.exit(result.returncode)
-
-        # Verify expected output files were produced
-        expected = ["isometric.png", "plan.png", "front.png", "side.png"]
-        missing = [f for f in expected if not (output_dir / f).exists()]
-        if missing:
-            print(
-                f"Error: Blender exited successfully but the following renders are missing: {missing}",
-                file=sys.stderr,
-            )
-            sys.exit(1)
-
-    finally:
-        # --- 4.2 Delete temp STL on success or failure ---
-        if tmp_stl_path.exists():
-            tmp_stl_path.unlink()
+    # Verify expected output files were produced
+    expected = ["isometric.png", "plan.png", "front.png", "side.png"]
+    missing = [f for f in expected if not (output_dir / f).exists()]
+    if missing:
+        print(
+            f"Error: Blender exited successfully but the following renders are missing: {missing}",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
     print(f"Renders written to: {output_dir}")
 

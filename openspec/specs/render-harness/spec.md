@@ -26,16 +26,20 @@ The system SHALL execute the model file in an isolated namespace and extract the
 - **WHEN** the model file raises an exception during execution
 - **THEN** `render.py` exits with a non-zero status code and prints the exception traceback
 
-### Requirement: Geometry export to temporary STL
-The system SHALL export the extracted build123d shape to a temporary STL file using a fine tessellation tolerance of 0.01 mm, and delete the file after Blender completes.
+### Requirement: Geometry export to output STL
+The system SHALL export the extracted build123d shape to `renders/<change-name>/model.stl` using a fine tessellation tolerance of 0.01 mm. The file SHALL be retained after Blender completes and SHALL NOT be deleted.
 
-#### Scenario: Temporary STL is created before Blender is invoked
+#### Scenario: STL is written to the output directory
 - **WHEN** `render.py` successfully extracts the shape
-- **THEN** a temporary STL file exists on disk before the Blender subprocess is started
+- **THEN** `renders/<change-name>/model.stl` exists on disk before the Blender subprocess is started
 
-#### Scenario: Temporary STL is deleted after rendering
-- **WHEN** the Blender subprocess exits (success or failure)
-- **THEN** the temporary STL file is deleted from disk
+#### Scenario: STL persists after successful rendering
+- **WHEN** the Blender subprocess exits with a zero status code
+- **THEN** `renders/<change-name>/model.stl` still exists on disk
+
+#### Scenario: STL persists after Blender failure
+- **WHEN** the Blender subprocess exits with a non-zero status code
+- **THEN** `renders/<change-name>/model.stl` still exists on disk
 
 ### Requirement: Blender binary detection
 The system SHALL locate the Blender binary via the `BLENDER_PATH` environment variable, falling back to `blender` on the system PATH, and exit with a clear error if neither is found.
