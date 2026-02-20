@@ -62,4 +62,4 @@
 
 - [x] 11.1 Create or use an existing simple build123d model file that exposes a `result` variable
 - [x] 11.2 Run `uv run python render.py <model.py> <change-name>` end-to-end and confirm all four PNG files are produced
-- [ ] 11.3 Commit the render outputs to the repository
+- [x] 11.3 Commit the render outputs to the repository
