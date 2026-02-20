@@ -6,3 +6,5 @@ __pycache__/
 
 # Node.js
 node_modules/
+
+# renders/ is intentionally NOT ignored — render outputs are versioned alongside model code
