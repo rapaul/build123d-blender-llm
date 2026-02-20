@@ -19,7 +19,9 @@
       "Bash(git -C:*)",
       "Bash(openspec list:*)",
       "Bash(openspec instructions specs:*)",
-      "Bash(openspec instructions tasks:*)"
+      "Bash(openspec instructions tasks:*)",
+      "Bash(openspec instructions apply:*)",
+      "Bash(blender:*)"
     ]
   }
 }
