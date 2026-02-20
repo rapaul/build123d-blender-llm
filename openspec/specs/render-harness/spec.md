@@ -1,4 +1,9 @@
-## ADDED Requirements
+# Render Harness
+
+## Purpose
+Provides a CLI pipeline (`render.py` + `blender_render.py`) that takes a build123d model file and produces a structured output directory containing the source file, exported STL geometry, and four canonical orthographic PNG renders (isometric, plan, front, side).
+
+## Requirements
 
 ### Requirement: CLI entrypoint accepts model file and change name
 The system SHALL provide a `render.py` script invokable as `uv run python render.py <model.py> <change-name>` that orchestrates the full rendering pipeline.
@@ -25,6 +30,13 @@ The system SHALL execute the model file in an isolated namespace and extract the
 #### Scenario: Model file raises an exception on import
 - **WHEN** the model file raises an exception during execution
 - **THEN** `render.py` exits with a non-zero status code and prints the exception traceback
+
+### Requirement: Model source file copied to output directory
+The system SHALL copy the model `.py` source file to `renders/<change-name>/model.py` so that the rendered output is self-contained and the source that produced the geometry is co-located with the renders.
+
+#### Scenario: model.py is present after rendering
+- **WHEN** `render.py` completes successfully
+- **THEN** `renders/<change-name>/model.py` exists and contains the same content as the input model file
 
 ### Requirement: Geometry export to output STL
 The system SHALL export the extracted build123d shape to `renders/<change-name>/model.stl` using a fine tessellation tolerance of 0.01 mm. The file SHALL be retained after Blender completes and SHALL NOT be deleted.

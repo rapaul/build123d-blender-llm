@@ -91,6 +91,9 @@ def main() -> None:
     output_dir = project_root / "renders" / change_name
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # --- 4.0 Copy model source to output directory ---
+    shutil.copy(model_file, output_dir / "model.py")
+
     # --- 4.1 Export STL to output directory ---
     stl_path = output_dir / "model.stl"
     export_stl(shape, str(stl_path), tolerance=0.01)
