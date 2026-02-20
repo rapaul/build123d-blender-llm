@@ -15,7 +15,11 @@
       "Bash(openspec status:*)",
       "Bash(openspec instructions proposal:*)",
       "Bash(openspec instructions design:*)",
-      "Bash(git -C /home/richard/code/build123d-blender add openspec/ .claude/settings.local.json)"
+      "Bash(git -C /home/richard/code/build123d-blender add openspec/ .claude/settings.local.json)",
+      "Bash(git -C:*)",
+      "Bash(openspec list:*)",
+      "Bash(openspec instructions specs:*)",
+      "Bash(openspec instructions tasks:*)"
     ]
   }
 }
